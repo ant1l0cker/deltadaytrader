@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Delta Day Traders Journal</title>
 
-  <!-- Supabase CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -256,7 +253,7 @@
     <div class="w-px h-6 bg-carbon-500 flex-shrink-0 hidden md:block"></div>
     <div class="flex-col items-center flex-shrink-0 hidden md:flex">
       <span class="text-xs text-smoke font-mono">TRADERS</span>
-      <span id="hdr-traders" class="font-mono text-sm font-semibold text-gold">11</span>
+      <span id="hdr-traders" class="font-mono text-sm font-semibold text-gold">10</span>
     </div>
     <div class="w-px h-6 bg-carbon-500 flex-shrink-0 hidden lg:block"></div>
     <div class="flex-col items-center flex-shrink-0 hidden lg:flex">
@@ -266,7 +263,7 @@
   </div>
 
   <!-- Log Trade CTA -->
-  <button class="btn-gold flex-shrink-0 flex items-center gap-2" onclick="openTradeModal()">
+  <button class="btn-gold flex-shrink-0 flex items-center gap-2" id="open-modal-btn">
     <svg width="14" height="14" fill="none" viewBox="0 0 14 14">
       <path d="M7 1v12M1 7h12" stroke="#0A0A0B" stroke-width="2" stroke-linecap="round"/>
     </svg>
@@ -302,10 +299,10 @@
 
   <!-- ── TABS ───────────────────────────────────────────── -->
   <div class="flex gap-6 border-b border-carbon-500 mb-6">
-    <button class="tab-btn active pb-3 text-sm font-semibold tracking-wide" data-tab="journal" onclick="switchTab('journal', this)">
+    <button class="tab-btn active pb-3 text-sm font-semibold tracking-wide" data-tab="journal">
       Journal Log
     </button>
-    <button class="tab-btn pb-3 text-sm font-semibold tracking-wide text-smoke" data-tab="roster" onclick="switchTab('roster', this)">
+    <button class="tab-btn pb-3 text-sm font-semibold tracking-wide text-smoke" data-tab="roster">
       Team Roster
     </button>
   </div>
@@ -322,15 +319,15 @@
           <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/>
           <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
-        <input id="search-input" type="text" placeholder="Search by trader or outcome…" class="pl-9" oninput="filterTrades()" />
+        <input id="search-input" type="text" placeholder="Search by trader or outcome…" class="pl-9" />
       </div>
-      <select id="filter-outcome" onchange="filterTrades()" style="width:auto;min-width:130px;">
+      <select id="filter-outcome" style="width:auto;min-width:130px;">
         <option value="">All Outcomes</option>
         <option value="WIN">WIN</option>
         <option value="LOSS">LOSS</option>
         <option value="OPEN">OPEN</option>
       </select>
-      <select id="filter-direction" onchange="filterTrades()" style="width:auto;min-width:140px;">
+      <select id="filter-direction" style="width:auto;min-width:140px;">
         <option value="">All Directions</option>
         <option value="BUY STOP">BUY STOP</option>
         <option value="SELL STOP">SELL STOP</option>
@@ -382,7 +379,7 @@
         <h2 class="font-display text-lg text-gold">Team Roster</h2>
         <p class="text-xs text-smoke mt-1">Edit display names — changes sync to the trade form dropdown instantly.</p>
       </div>
-      <div class="text-xs font-mono text-smoke border border-carbon-500 rounded px-3 py-1">11 / 11 SEATS</div>
+      <div class="text-xs font-mono text-smoke border border-carbon-500 rounded px-3 py-1">10 / 10 SEATS</div>
     </div>
     <div id="roster-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       <!-- Populated by JS -->
@@ -395,8 +392,8 @@
 <!-- ═══════════════════════════════════════════════════════════
      MODAL: LOG TRADE
 ═══════════════════════════════════════════════════════════ -->
-<div id="trade-modal" class="fixed inset-0 z-[200] modal-backdrop hidden items-center justify-center p-4" onclick="handleModalBackdropClick(event)">
-  <div class="slide-up w-full max-w-2xl rounded-xl border border-gold gold-glow overflow-hidden" style="background:#111113;" onclick="event.stopPropagation()">
+<div id="trade-modal" class="fixed inset-0 z-[200] modal-backdrop hidden items-center justify-center p-4">
+  <div class="slide-up w-full max-w-2xl rounded-xl border border-gold gold-glow overflow-hidden" style="background:#111113;">
 
     <!-- Modal header -->
     <div class="flex items-center justify-between px-6 py-4 border-b border-carbon-500">
@@ -404,7 +401,7 @@
         <div class="w-2 h-2 rounded-full bg-gold pulse-dot"></div>
         <h3 class="font-display text-base font-bold text-gold tracking-wide">LOG NEW TRADE</h3>
       </div>
-      <button onclick="closeTradeModal()" class="text-smoke hover:text-white transition-colors text-xl leading-none">&times;</button>
+      <button id="close-modal-x" class="text-smoke hover:text-white transition-colors text-xl leading-none">&times;</button>
     </div>
 
     <!-- Modal body -->
@@ -479,8 +476,8 @@
 
     <!-- Modal footer -->
     <div class="flex justify-end gap-3 px-6 py-4 border-t border-carbon-500">
-      <button class="btn-ghost" onclick="closeTradeModal()">Cancel</button>
-      <button class="btn-gold" onclick="submitTrade()">Log Trade →</button>
+      <button class="btn-ghost" id="close-modal-btn">Cancel</button>
+      <button class="btn-gold" id="submit-trade-btn">Log Trade →</button>
     </div>
   </div>
 </div>
@@ -493,520 +490,415 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     JAVASCRIPT
+     JAVASCRIPT (FIREBASE INTEGRATED)
 ═══════════════════════════════════════════════════════════ -->
-<script>
-// ═══════════════════════════════════════════════════════════════
-//  SUPABASE CONFIGURATION
-// ═══════════════════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://yexirvpxumeabzqtuwbv.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_9ZnHlwBh0_mAp2XBYOeujQ_1VswNfwZ';
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, onSnapshot, deleteDoc, doc, updateDoc, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
-const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : undefined;
-
-// ── STORAGE KEYS ───────────────────────────────────────────────
-const LS_TRADES = 'delta_trades_v1';
-const LS_ROSTER = 'delta_roster_v1';
-
-// ── DEFAULT ROSTER (11 traders) ────────────────────────────────
-const DEFAULT_ROSTER = [
-  { id: 1,  name: 'Paul'    },
-  { id: 2,  name: 'Levy'  },
-  { id: 3,  name: 'Tosh'  },
-  { id: 4,  name: 'Tim'    },
-  { id: 5,  name: 'Lehmann'   },
-  { id: 6,  name: 'Brian' },
-  { id: 7,  name: 'Griffo'    },
-  { id: 8,  name: 'Derrean'   },
-  { id: 9,  name: 'Junior'   },
-  { id: 10, name: 'Brandon'  },
-  { id: 11, name: 'Joseph'  },
-];
-
-// ── STATE ───────────────────────────────────────────────────────
-let trades  = [];
-let roster  = [];
-let filtered = [];
-
-// ── INIT ────────────────────────────────────────────────────────
-async function init() {
-  // Load default roster framework instantly
-  roster = loadRoster();
-  renderRoster();
-  renderTraderDropdown();
-  setDefaultTimestamp();
-
-  if (supabase) {
-    showToast('Connecting to trade floor...', 'info');
-    await Promise.all([
-      pullRosterFromSupabase(),
-      pullTradesFromSupabase()
-    ]);
-    initializeRealtimeListener();
-  } else {
-    trades = loadTrades();
-    filtered = [...trades];
-    renderTrades();
-    updateGlobalStats();
-  }
-}
-
-// ── REALTIME ROOM LISTENER ─────────────────────────────────────
-function initializeRealtimeListener() {
-  if (!supabase) return;
-
-  supabase
-    .channel('room-sync')
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: 'trades' },
-      (payload) => {
-        console.log('[Realtime Sync Update]:', payload);
-        if (payload.eventType === 'INSERT') {
-          if (!trades.some(t => t.id === payload.new.id)) {
-            trades.unshift(mapDbToTrade(payload.new));
-          }
-        } else if (payload.eventType === 'DELETE') {
-          trades = trades.filter(t => t.id !== payload.old.id);
-        } else if (payload.eventType === 'UPDATE') {
-          trades = trades.map(t => t.id === payload.new.id ? mapDbToTrade(payload.new) : t);
-        }
-        filterTrades();
-        updateGlobalStats();
-      }
-    )
-    .on(
-      'postgres_changes',
-      { event: 'UPDATE', schema: 'public', table: 'roster' },
-      (payload) => {
-        console.log('[Realtime Roster Update]:', payload);
-        roster = roster.map(m => m.id === payload.new.id ? { id: payload.new.id, name: payload.new.display_name } : m);
-        saveRoster();
-        renderRoster();
-        renderTraderDropdown();
-        filterTrades();
-        updateGlobalStats();
-      }
-    )
-    .subscribe();
-}
-
-function mapDbToTrade(r) {
-  return {
-    id:        r.id,
-    timestamp: r.created_at,
-    trader:    r.trader,
-    asset:     r.asset,
-    direction: r.direction,
-    lot:       parseFloat(r.lot_size || 0),
-    risk:      parseFloat(r.risk || 0),
-    pnl:       parseFloat(r.pnl || 0),
-    outcome:   r.outcome,
-    notes:     r.notes,
-  };
-}
-
-// ── LOCAL STORAGE HELPERS ───────────────────────────────────────
-function loadTrades() {
-  try { return JSON.parse(localStorage.getItem(LS_TRADES)) || []; }
-  catch { return []; }
-}
-function saveTrades() {
-  localStorage.setItem(LS_TRADES, JSON.stringify(trades));
-}
-function loadRoster() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(LS_ROSTER));
-    if (saved && saved.length === DEFAULT_ROSTER.length) return saved;
-  } catch {}
-  return JSON.parse(JSON.stringify(DEFAULT_ROSTER));
-}
-function saveRoster() {
-  localStorage.setItem(LS_ROSTER, JSON.stringify(roster));
-}
-
-// ── TAB SWITCH ──────────────────────────────────────────────────
-function switchTab(tab, btn) {
-  document.querySelectorAll('.tab-btn').forEach(b => {
-    b.classList.remove('active');
-    b.classList.add('text-smoke');
-  });
-  btn.classList.add('active');
-  btn.classList.remove('text-smoke');
-  document.getElementById('tab-journal').classList.toggle('hidden', tab !== 'journal');
-  document.getElementById('tab-roster').classList.toggle('hidden',  tab !== 'roster');
-}
-
-// ── MODAL ───────────────────────────────────────────────────────
-function openTradeModal() {
-  const modal = document.getElementById('trade-modal');
-  modal.classList.remove('hidden');
-  modal.classList.add('flex');
-  setDefaultTimestamp();
-}
-function closeTradeModal() {
-  const modal = document.getElementById('trade-modal');
-  modal.classList.add('hidden');
-  modal.classList.remove('flex');
-}
-function handleModalBackdropClick(e) {
-  if (e.target === e.currentTarget) closeTradeModal();
-}
-function setDefaultTimestamp() {
-  const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  document.getElementById('form-timestamp').value = now.toISOString().slice(0,16);
-}
-
-// ── SUBMIT TRADE ────────────────────────────────────────────────
-function submitTrade() {
-  const trader    = document.getElementById('form-trader').value.trim();
-  const asset     = document.getElementById('form-asset').value.trim() || 'XAUUSD';
-  const direction = document.getElementById('form-direction').value;
-  const lot       = parseFloat(document.getElementById('form-lot').value);
-  const risk      = parseFloat(document.getElementById('form-risk').value);
-  const pnl       = parseFloat(document.getElementById('form-pnl').value) || 0;
-  const outcome   = document.getElementById('form-outcome').value;
-  const notes     = document.getElementById('form-notes').value.trim();
-  let timestamp   = document.getElementById('form-timestamp').value;
-
-  if (!trader) { showToast('Select a trader.', 'error'); return; }
-  if (!lot || lot <= 0) { showToast('Enter a valid lot size.', 'error'); return; }
-  if (isNaN(risk) || risk < 0) { showToast('Enter a valid risk amount.', 'error'); return; }
-
-  timestamp = timestamp ? new Date(timestamp).toISOString() : new Date().toISOString();
-
-  const trade = {
-    id:        Date.now().toString(36) + Math.random().toString(36).slice(2,6),
-    timestamp,
-    trader,
-    asset,
-    direction,
-    lot,
-    risk,
-    pnl,
-    outcome,
-    notes,
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyBP0qSiwjd0njOpjrBwqQZRT3bZCmCfLng",
+    authDomain: "delta-900ed.firebaseapp.com",
+    projectId: "delta-900ed",
+    storageBucket: "delta-900ed.firebasestorage.app",
+    messagingSenderId: "636277170718",
+    appId: "1:636277170718:web:b77e127b96e79447b1840f",
+    measurementId: "G-EQWM9HRWN0"
   };
 
-  // Optimistic UI update
-  trades.unshift(trade);
-  saveTrades();
-  filterTrades();
-  updateGlobalStats();
-  closeTradeModal();
-  clearTradeForm();
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
 
-  if (supabase) {
-    pushTradeToSupabase(trade);
-  } else {
-    showToast('Trade logged locally.', 'success');
-  }
-}
+  // ── STORAGE KEYS (Local fallback) ─────────────────────────────
+  const LS_TRADES = 'delta_trades_v1';
+  const LS_ROSTER = 'delta_roster_v1';
 
-function clearTradeForm() {
-  document.getElementById('form-lot').value   = '';
-  document.getElementById('form-risk').value  = '';
-  document.getElementById('form-pnl').value   = '';
-  document.getElementById('form-notes').value = '';
-  document.getElementById('form-outcome').value = 'OPEN';
-  document.getElementById('form-asset').value   = 'XAUUSD';
-}
+  // ── DEFAULT ROSTER (10 traders) ────────────────────────────────
+  const DEFAULT_ROSTER = [
+    { id: 1,  name: 'Paul'    },
+    { id: 2,  name: 'Levy'  },
+    { id: 3,  name: 'Tosh'  },
+    { id: 4,  name: 'Tim'    },
+    { id: 5,  name: 'Lehmann'   },
+    { id: 6,  name: 'Brian' },
+    { id: 7,  name: 'Griffo'    },
+    { id: 8,  name: 'Derrean'   },
+    { id: 9,  name: 'Junior'   },
+    { id: 10, name: 'Brandon'  },
+    { id: 11, name: 'Joseph'  },
+  ];
 
-// ── RENDER TRADES ───────────────────────────────────────────────
-function filterTrades() {
-  const q   = document.getElementById('search-input').value.toLowerCase().trim();
-  const oc  = document.getElementById('filter-outcome').value;
-  const dir = document.getElementById('filter-direction').value;
+  // ── STATE ───────────────────────────────────────────────────────
+  let trades   = [];
+  let roster   = [];
+  let filtered = [];
 
-  filtered = trades.filter(t => {
-    const matchQ  = !q  || t.trader.toLowerCase().includes(q) || t.outcome.toLowerCase().includes(q);
-    const matchOC = !oc || t.outcome === oc;
-    const matchD  = !dir || t.direction === dir;
-    return matchQ && matchOC && matchD;
-  });
-
-  renderTrades();
-}
-
-function renderTrades() {
-  const tbody = document.getElementById('trade-table-body');
-  const empty = document.getElementById('empty-state');
-  const count = document.getElementById('table-count');
-
-  if (filtered.length === 0) {
-    tbody.innerHTML = '';
-    empty.classList.remove('hidden');
-    count.textContent = `Showing 0 of ${trades.length} trades`;
-    return;
-  }
-
-  empty.classList.add('hidden');
-  count.textContent = `Showing ${filtered.length} of ${trades.length} trades`;
-
-  tbody.innerHTML = filtered.map(t => {
-    const ts       = formatTimestamp(t.timestamp);
-    const pnlColor = t.pnl > 0 ? 'text-green-400' : t.pnl < 0 ? 'text-red-400' : 'text-smoke';
-    const pnlStr   = t.pnl >= 0 ? `+$${Math.abs(t.pnl).toFixed(2)}` : `-$${Math.abs(t.pnl).toFixed(2)}`;
-    const badge    = outcomeBadge(t.outcome);
-    const dirClass = directionClass(t.direction);
-    const notesShort = t.notes ? (t.notes.length > 60 ? t.notes.slice(0,60)+'…' : t.notes) : '—';
-
-    return `
-    <tr class="trade-row">
-      <td class="px-4 py-3 font-mono text-xs text-smoke whitespace-nowrap">${ts}</td>
-      <td class="px-4 py-3 text-sm font-semibold whitespace-nowrap">${escHtml(t.trader)}</td>
-      <td class="px-4 py-3 font-mono text-xs text-gold">${escHtml(t.asset)}</td>
-      <td class="px-4 py-3 font-mono text-xs font-semibold ${dirClass}">${t.direction}</td>
-      <td class="px-4 py-3 font-mono text-xs text-right">${t.lot.toFixed(2)}</td>
-      <td class="px-4 py-3 font-mono text-xs text-right text-red-400">$${t.risk.toFixed(2)}</td>
-      <td class="px-4 py-3 font-mono text-xs text-right font-semibold ${pnlColor}">${pnlStr}</td>
-      <td class="px-4 py-3 text-center"><span class="badge-pill ${badge.cls} rounded-full px-2 py-0.5 text-xs font-mono font-bold">${badge.label}</span></td>
-      <td class="px-4 py-3 text-xs text-smoke max-w-xs truncate" title="${escHtml(t.notes)}">${escHtml(notesShort)}</td>
-      <td class="px-4 py-3 text-center"><button class="btn-danger" onclick="deleteTrade('${t.id}')">✕</button></td>
-    </tr>`;
-  }).join('');
-}
-
-function outcomeBadge(outcome) {
-  if (outcome === 'WIN')  return { cls: 'badge-win',  label: 'WIN'  };
-  if (outcome === 'LOSS') return { cls: 'badge-loss', label: 'LOSS' };
-  return { cls: 'badge-open', label: 'OPEN' };
-}
-
-function directionClass(dir) {
-  if (dir === 'BUY STOP')  return 'dir-buy-stop';
-  if (dir === 'SELL STOP') return 'dir-sell-stop';
-  if (dir === 'BUY')       return 'dir-buy';
-  if (dir === 'SELL')      return 'dir-sell';
-  return '';
-}
-
-function formatTimestamp(iso) {
-  try {
-    const d = new Date(iso);
-    const dd  = String(d.getDate()).padStart(2,'0');
-    const mm  = String(d.getMonth()+1).padStart(2,'0');
-    const yy  = String(d.getFullYear()).slice(2);
-    const hh  = String(d.getHours()).padStart(2,'0');
-    const min = String(d.getMinutes()).padStart(2,'0');
-    return `${dd}/${mm}/${yy} ${hh}:${min}`;
-  } catch { return iso; }
-}
-
-// ── DELETE TRADE ────────────────────────────────────────────────
-function deleteTrade(id) {
-  if (!confirm('Delete this trade entry?')) return;
-  trades = trades.filter(t => t.id !== id);
-  saveTrades();
-  filterTrades();
-  updateGlobalStats();
-  showToast('Removing entry...', 'info');
-
-  if (supabase) {
-    deleteTradeFromSupabase(id);
-  }
-}
-
-// ── GLOBAL STATS ────────────────────────────────────────────────
-function updateGlobalStats() {
-  const totalPnl   = trades.reduce((s, t) => s + t.pnl, 0);
-  const totalRisk  = trades.reduce((s, t) => s + t.risk, 0);
-  const closed     = trades.filter(t => t.outcome !== 'OPEN');
-  const wins       = trades.filter(t => t.outcome === 'WIN').length;
-  const winRate    = closed.length ? Math.round((wins / closed.length) * 100) : null;
-  const winRateStr = winRate !== null ? `${winRate}%` : '—';
-  const winColor   = winRate !== null ? (winRate >= 50 ? 'text-green-400' : 'text-red-400') : '';
-
-  const fmt = v => (v >= 0 ? `+$${v.toFixed(2)}` : `-$${Math.abs(v).toFixed(2)}`);
-  const pnlColor = totalPnl >= 0 ? 'text-green-400' : 'text-red-400';
-
-  document.getElementById('stat-pnl').textContent    = fmt(totalPnl);
-  document.getElementById('stat-pnl').className      = `font-mono text-xl font-semibold ${pnlColor}`;
-  document.getElementById('stat-wr').textContent     = winRateStr;
-  document.getElementById('stat-wr').className       = `font-mono text-xl font-semibold ${winColor}`;
-  document.getElementById('stat-trades').textContent = trades.length;
-  document.getElementById('stat-risk').textContent   = `$${totalRisk.toFixed(2)}`;
-
-  document.getElementById('hdr-total-pnl').textContent = fmt(totalPnl);
-  document.getElementById('hdr-total-pnl').className   = `font-mono text-sm font-semibold ${pnlColor}`;
-  document.getElementById('hdr-win-rate').textContent  = winRateStr;
-  document.getElementById('hdr-win-rate').className    = `font-mono text-sm font-semibold ${winColor}`;
-  document.getElementById('hdr-trades').textContent    = trades.length;
-}
-
-// ── ROSTER RENDER ───────────────────────────────────────────────
-function renderRoster() {
-  const grid = document.getElementById('roster-grid');
-  grid.innerHTML = roster.map((member) => {
-    const tradeCount = trades.filter(t => t.trader === member.name).length;
-    const memberPnl  = trades.filter(t => t.trader === member.name).reduce((s,t) => s + t.pnl, 0);
-    const pnlColor   = memberPnl >= 0 ? 'text-green-400' : 'text-red-400';
-    const pnlStr     = memberPnl >= 0 ? `+$${memberPnl.toFixed(2)}` : `-$${Math.abs(memberPnl).toFixed(2)}`;
-
-    return `
-    <div class="roster-card p-4 flex flex-col gap-3">
-      <div class="flex items-start justify-between">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded border border-gold flex items-center justify-center flex-shrink-0">
-            <span class="font-mono text-xs font-bold text-gold">${String(member.id).padStart(2,'0')}</span>
-          </div>
-          <div>
-            <div class="text-xs text-smoke">Seat ${member.id}</div>
-            <div class="text-xs font-mono ${pnlColor}">${pnlStr}</div>
-          </div>
-        </div>
-        <div class="text-right">
-          <div class="text-xs text-smoke">${tradeCount} trade${tradeCount !== 1 ? 's' : ''}</div>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <input
-          id="roster-input-${member.id}"
-          type="text"
-          value="${escHtml(member.name)}"
-          class="flex-1 text-sm font-semibold"
-          placeholder="Trader display name"
-        />
-        <button
-          class="btn-gold text-xs px-3 py-2 flex-shrink-0"
-          onclick="saveRosterName(${member.id})"
-        >✓</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function saveRosterName(id) {
-  const input = document.getElementById(`roster-input-${id}`);
-  const newName = input.value.trim();
-  if (!newName) { showToast('Name cannot be empty.', 'error'); return; }
-
-  const member = roster.find(m => m.id === id);
-  if (!member) return;
-
-  const oldName = member.name;
-  member.name = newName;
-
-  trades.forEach(t => { if (t.trader === oldName) t.trader = newName; });
-  saveTrades();
-  saveRoster();
-
-  renderRoster();
-  renderTraderDropdown();
-  filterTrades();
-  updateGlobalStats();
-  showToast(`Updating Seat ${id}...`, 'info');
-
-  if (supabase) {
-    syncRosterToSupabase();
-  }
-}
-
-// ── TRADER DROPDOWN (in modal) ──────────────────────────────────
-function renderTraderDropdown() {
-  const sel = document.getElementById('form-trader');
-  const current = sel.value;
-  sel.innerHTML = `<option value="">— Select Trader —</option>` +
-    roster.map(m => `<option value="${escHtml(m.name)}" ${m.name === current ? 'selected' : ''}>${escHtml(m.name)}</option>`).join('');
-}
-
-// ── TOAST NOTIFICATION ──────────────────────────────────────────
-function showToast(msg, type = 'info') {
-  const container = document.getElementById('toast-container');
-  const colors = {
-    success: 'border-green-500 text-green-300 bg-[#052e16]',
-    error:   'border-red-500   text-red-300   bg-[#2d0707]',
-    info:    'border-gold      text-gold       bg-[#1a1700]',
-  };
-  const icons = { success: '✓', error: '✕', info: '◆' };
-  const el = document.createElement('div');
-  el.id = 'toast';
-  el.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg border text-sm font-mono ${colors[type] || colors.info}`;
-  el.style.minWidth = '240px';
-  el.innerHTML = `<span class="text-base">${icons[type]||'◆'}</span><span>${escHtml(msg)}</span>`;
-  container.appendChild(el);
-  setTimeout(() => {
-    el.classList.add('hide');
-    setTimeout(() => el.remove(), 350);
-  }, 3200);
-}
-
-// ── HTML ESCAPE ─────────────────────────────────────────────────
-function escHtml(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ── BACKEND SYNC FUNCTIONS ─────────────────────────────────────
-async function pushTradeToSupabase(trade) {
-  if (!supabase) return;
-  const { error } = await supabase
-    .from('trades')
-    .upsert([{
-      id:        trade.id,
-      created_at: trade.timestamp,
-      trader:    trade.trader,
-      asset:     trade.asset,
-      direction: trade.direction,
-      lot_size:  trade.lot,
-      risk:      trade.risk,
-      pnl:       trade.pnl,
-      outcome:   trade.outcome,
-      notes:     trade.notes,
-    }]);
-  if (error) showToast('Cloud update failed.', 'error');
-  else showToast('Trade synced to room.', 'success');
-}
-
-async function pullTradesFromSupabase() {
-  if (!supabase) return;
-  const { data, error } = await supabase
-    .from('trades')
-    .select('*')
-    .order('created_at', { ascending: false });
-  if (error) return;
-
-  trades = (data || []).map(r => mapDbToTrade(r));
-  saveTrades();
-  filterTrades();
-  updateGlobalStats();
-}
-
-async function syncRosterToSupabase() {
-  if (!supabase) return;
-  const { error } = await supabase
-    .from('roster')
-    .upsert(roster.map(m => ({ id: m.id, display_name: m.name })));
-  if (error) showToast('Roster cloud update failed.', 'error');
-  else showToast('Roster updated globally.', 'success');
-}
-
-async function pullRosterFromSupabase() {
-  if (!supabase) return;
-  const { data, error } = await supabase
-    .from('roster')
-    .select('*')
-    .order('id', { ascending: true });
-  if (error) return;
-  if (data && data.length === DEFAULT_ROSTER.length) {
-    roster = data.map(r => ({ id: r.id, name: r.display_name }));
-    saveRoster();
+  // ── INIT ────────────────────────────────────────────────────────
+  async function init() {
+    // Initial UI load
+    roster = loadRosterLocal();
     renderRoster();
     renderTraderDropdown();
+    setDefaultTimestamp();
+
+    showToast('Connecting to trade floor...', 'info');
+
+    // Establish Real-time Listeners
+    setupRealtimeListeners();
   }
-}
 
-async function deleteTradeFromSupabase(tradeId) {
-  if (!supabase) return;
-  const { error } = await supabase.from('trades').delete().eq('id', tradeId);
-  if (error) showToast('Cloud removal failed.', 'error');
-  else showToast('Removed from cloud floor.', 'info');
-}
+  // ── REAL-TIME LISTENERS ───────────────────────────────────────
+  function setupRealtimeListeners() {
+    // Listen for Trade changes
+    const qTrades = query(collection(db, "trades"), orderBy("timestamp", "desc"));
+    onSnapshot(qTrades, (snapshot) => {
+      trades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      saveTradesLocal();
+      filterTrades();
+      updateGlobalStats();
+    });
 
-// ── KICK OFF ─────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', init);
+    // Listen for Roster changes
+    onSnapshot(collection(db, "roster"), (snapshot) => {
+      if (!snapshot.empty) {
+        roster = snapshot.docs.map(doc => ({ id: parseInt(doc.id), ...doc.data() }));
+        roster.sort((a,b) => a.id - b.id);
+        saveRosterLocal();
+        renderRoster();
+        renderTraderDropdown();
+        filterTrades(); // Refresh table names if needed
+        updateGlobalStats();
+      } else {
+        // First time initialization if DB is empty
+        initializeRosterOnFirestore();
+      }
+    });
+  }
+
+  async function initializeRosterOnFirestore() {
+    for (const member of DEFAULT_ROSTER) {
+      await setDoc(doc(db, "roster", member.id.toString()), { name: member.name });
+    }
+  }
+
+  // ── LOCAL STORAGE HELPERS ───────────────────────────────────────
+  function loadTradesLocal() {
+    try { return JSON.parse(localStorage.getItem(LS_TRADES)) || []; }
+    catch { return []; }
+  }
+  function saveTradesLocal() {
+    localStorage.setItem(LS_TRADES, JSON.stringify(trades));
+  }
+  function loadRosterLocal() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(LS_ROSTER));
+      if (saved && saved.length === DEFAULT_ROSTER.length) return saved;
+    } catch {}
+    return JSON.parse(JSON.stringify(DEFAULT_ROSTER));
+  }
+  function saveRosterLocal() {
+    localStorage.setItem(LS_ROSTER, JSON.stringify(roster));
+  }
+
+  // ── UI HELPERS ──────────────────────────────────────────────────
+  window.switchTab = (tab, btn) => {
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.remove('active');
+      b.classList.add('text-smoke');
+    });
+    btn.classList.add('active');
+    btn.classList.remove('text-smoke');
+    document.getElementById('tab-journal').classList.toggle('hidden', tab !== 'journal');
+    document.getElementById('tab-roster').classList.toggle('hidden',  tab !== 'roster');
+  };
+
+  function openTradeModal() {
+    const modal = document.getElementById('trade-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setDefaultTimestamp();
+  }
+  function closeTradeModal() {
+    const modal = document.getElementById('trade-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+  function setDefaultTimestamp() {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('form-timestamp').value = now.toISOString().slice(0,16);
+  }
+
+  // ── CORE LOGIC ────────────────────────────────────────────────
+  async function submitTrade() {
+    const trader    = document.getElementById('form-trader').value.trim();
+    const asset     = document.getElementById('form-asset').value.trim() || 'XAUUSD';
+    const direction = document.getElementById('form-direction').value;
+    const lot       = parseFloat(document.getElementById('form-lot').value);
+    const risk      = parseFloat(document.getElementById('form-risk').value);
+    const pnl       = parseFloat(document.getElementById('form-pnl').value) || 0;
+    const outcome   = document.getElementById('form-outcome').value;
+    const notes     = document.getElementById('form-notes').value.trim();
+    let timestamp   = document.getElementById('form-timestamp').value;
+
+    if (!trader) { showToast('Select a trader.', 'error'); return; }
+    if (!lot || lot <= 0) { showToast('Enter a valid lot size.', 'error'); return; }
+    if (isNaN(risk) || risk < 0) { showToast('Enter a valid risk amount.', 'error'); return; }
+
+    timestamp = timestamp ? new Date(timestamp).toISOString() : new Date().toISOString();
+
+    const tradeData = {
+      timestamp,
+      trader,
+      asset,
+      direction,
+      lot,
+      risk,
+      pnl,
+      outcome,
+      notes,
+    };
+
+    try {
+      await addDoc(collection(db, "trades"), tradeData);
+      location.reload();
+    } catch (e) {
+      console.error("Error adding document: ", e);
+      showToast('Failed to sync trade.', 'error');
+    }
+  }
+
+  function clearTradeForm() {
+    document.getElementById('form-lot').value   = '';
+    document.getElementById('form-risk').value  = '';
+    document.getElementById('form-pnl').value   = '';
+    document.getElementById('form-notes').value = '';
+    document.getElementById('form-outcome').value = 'OPEN';
+    document.getElementById('form-asset').value   = 'XAUUSD';
+  }
+
+  window.deleteTrade = async (id) => {
+    if (!confirm('Delete this trade entry?')) return;
+    try {
+      await deleteDoc(doc(db, "trades", id));
+      showToast('Removed from cloud.', 'info');
+    } catch (e) {
+      showToast('Failed to delete.', 'error');
+    }
+  };
+
+  window.saveRosterName = async (id) => {
+    const input = document.getElementById(`roster-input-${id}`);
+    const newName = input.value.trim();
+    if (!newName) { showToast('Name cannot be empty.', 'error'); return; }
+
+    try {
+      await updateDoc(doc(db, "roster", id.toString()), { name: newName });
+      showToast(`Seat ${id} updated globally.`, 'success');
+    } catch (e) {
+      showToast('Failed to update roster.', 'error');
+    }
+  };
+
+  // ── RENDERING ──────────────────────────────────────────────────
+  function filterTrades() {
+    const q   = document.getElementById('search-input').value.toLowerCase().trim();
+    const oc  = document.getElementById('filter-outcome').value;
+    const dir = document.getElementById('filter-direction').value;
+
+    filtered = trades.filter(t => {
+      const matchQ  = !q  || (t.trader && t.trader.toLowerCase().includes(q)) || (t.outcome && t.outcome.toLowerCase().includes(q));
+      const matchOC = !oc || t.outcome === oc;
+      const matchD  = !dir || t.direction === dir;
+      return matchQ && matchOC && matchD;
+    });
+
+    renderTrades();
+  }
+
+  function renderTrades() {
+    const tbody = document.getElementById('trade-table-body');
+    const empty = document.getElementById('empty-state');
+    const count = document.getElementById('table-count');
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '';
+      empty.classList.remove('hidden');
+      count.textContent = `Showing 0 of ${trades.length} trades`;
+      return;
+    }
+
+    empty.classList.add('hidden');
+    count.textContent = `Showing ${filtered.length} of ${trades.length} trades`;
+
+    tbody.innerHTML = filtered.map(t => {
+      const ts       = formatTimestamp(t.timestamp);
+      const pnlColor = t.pnl > 0 ? 'text-green-400' : t.pnl < 0 ? 'text-red-400' : 'text-smoke';
+      const pnlStr   = t.pnl >= 0 ? `+$${Math.abs(t.pnl).toFixed(2)}` : `-$${Math.abs(t.pnl).toFixed(2)}`;
+      const badge    = outcomeBadge(t.outcome);
+      const dirClass = directionClass(t.direction);
+      const notesShort = t.notes ? (t.notes.length > 60 ? t.notes.slice(0,60)+'…' : t.notes) : '—';
+
+      return `
+      <tr class="trade-row">
+        <td class="px-4 py-3 font-mono text-xs text-smoke whitespace-nowrap">${ts}</td>
+        <td class="px-4 py-3 text-sm font-semibold whitespace-nowrap">${escHtml(t.trader)}</td>
+        <td class="px-4 py-3 font-mono text-xs text-gold">${escHtml(t.asset)}</td>
+        <td class="px-4 py-3 font-mono text-xs font-semibold ${dirClass}">${t.direction}</td>
+        <td class="px-4 py-3 font-mono text-xs text-right">${parseFloat(t.lot).toFixed(2)}</td>
+        <td class="px-4 py-3 font-mono text-xs text-right text-red-400">$${parseFloat(t.risk).toFixed(2)}</td>
+        <td class="px-4 py-3 font-mono text-xs text-right font-semibold ${pnlColor}">${pnlStr}</td>
+        <td class="px-4 py-3 text-center"><span class="badge-pill ${badge.cls} rounded-full px-2 py-0.5 text-xs font-mono font-bold">${badge.label}</span></td>
+        <td class="px-4 py-3 text-xs text-smoke max-w-xs truncate" title="${escHtml(t.notes)}">${escHtml(notesShort)}</td>
+        <td class="px-4 py-3 text-center"><button class="btn-danger" onclick="deleteTrade('${t.id}')">✕</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function outcomeBadge(outcome) {
+    if (outcome === 'WIN')  return { cls: 'badge-win',  label: 'WIN'  };
+    if (outcome === 'LOSS') return { cls: 'badge-loss', label: 'LOSS' };
+    return { cls: 'badge-open', label: 'OPEN' };
+  }
+
+  function directionClass(dir) {
+    if (dir === 'BUY STOP')  return 'dir-buy-stop';
+    if (dir === 'SELL STOP') return 'dir-sell-stop';
+    if (dir === 'BUY')       return 'dir-buy';
+    if (dir === 'SELL')      return 'dir-sell';
+    return '';
+  }
+
+  function formatTimestamp(iso) {
+    try {
+      const d = new Date(iso);
+      const dd  = String(d.getDate()).padStart(2,'0');
+      const mm  = String(d.getMonth()+1).padStart(2,'0');
+      const yy  = String(d.getFullYear()).slice(2);
+      const hh  = String(d.getHours()).padStart(2,'0');
+      const min = String(d.getMinutes()).padStart(2,'0');
+      return `${dd}/${mm}/${yy} ${hh}:${min}`;
+    } catch { return iso; }
+  }
+
+  function updateGlobalStats() {
+    const totalPnl   = trades.reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0);
+    const totalRisk  = trades.reduce((s, t) => s + (parseFloat(t.risk) || 0), 0);
+    const closed     = trades.filter(t => t.outcome !== 'OPEN');
+    const wins       = trades.filter(t => t.outcome === 'WIN').length;
+    const winRate    = closed.length ? Math.round((wins / closed.length) * 100) : null;
+    const winRateStr = winRate !== null ? `${winRate}%` : '—';
+    const winColor   = winRate !== null ? (winRate >= 50 ? 'text-green-400' : 'text-red-400') : '';
+
+    const fmt = v => (v >= 0 ? `+$${v.toFixed(2)}` : `-$${Math.abs(v).toFixed(2)}`);
+    const pnlColor = totalPnl >= 0 ? 'text-green-400' : 'text-red-400';
+
+    document.getElementById('stat-pnl').textContent    = fmt(totalPnl);
+    document.getElementById('stat-pnl').className      = `font-mono text-xl font-semibold ${pnlColor}`;
+    document.getElementById('stat-wr').textContent     = winRateStr;
+    document.getElementById('stat-wr').className       = `font-mono text-xl font-semibold ${winColor}`;
+    document.getElementById('stat-trades').textContent = trades.length;
+    document.getElementById('stat-risk').textContent   = `$${totalRisk.toFixed(2)}`;
+
+    document.getElementById('hdr-total-pnl').textContent = fmt(totalPnl);
+    document.getElementById('hdr-total-pnl').className   = `font-mono text-sm font-semibold ${pnlColor}`;
+    document.getElementById('hdr-win-rate').textContent  = winRateStr;
+    document.getElementById('hdr-win-rate').className    = `font-mono text-sm font-semibold ${winColor}`;
+    document.getElementById('hdr-trades').textContent    = trades.length;
+  }
+
+  function renderRoster() {
+    const grid = document.getElementById('roster-grid');
+    grid.innerHTML = roster.map((member) => {
+      const tradeCount = trades.filter(t => t.trader === member.name).length;
+      const memberPnl  = trades.filter(t => t.trader === member.name).reduce((s,t) => s + (parseFloat(t.pnl) || 0), 0);
+      const pnlColor   = memberPnl >= 0 ? 'text-green-400' : 'text-red-400';
+      const pnlStr     = memberPnl >= 0 ? `+$${memberPnl.toFixed(2)}` : `-$${Math.abs(memberPnl).toFixed(2)}`;
+
+      return `
+      <div class="roster-card p-4 flex flex-col gap-3">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded border border-gold flex items-center justify-center flex-shrink-0">
+              <span class="font-mono text-xs font-bold text-gold">${String(member.id).padStart(2,'0')}</span>
+            </div>
+            <div>
+              <div class="text-xs text-smoke">Seat ${member.id}</div>
+              <div class="text-xs font-mono ${pnlColor}">${pnlStr}</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-xs text-smoke">${tradeCount} trade${tradeCount !== 1 ? 's' : ''}</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <input
+            id="roster-input-${member.id}"
+            type="text"
+            value="${escHtml(member.name)}"
+            class="flex-1 text-sm font-semibold"
+            placeholder="Trader display name"
+          />
+          <button
+            class="btn-gold text-xs px-3 py-2 flex-shrink-0"
+            onclick="saveRosterName(${member.id})"
+          >✓</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderTraderDropdown() {
+    const sel = document.getElementById('form-trader');
+    const current = sel.value;
+    sel.innerHTML = `<option value="">— Select Trader —</option>` +
+      roster.map(m => `<option value="${escHtml(m.name)}" ${m.name === current ? 'selected' : ''}>${escHtml(m.name)}</option>`).join('');
+  }
+
+  function showToast(msg, type = 'info') {
+    const container = document.getElementById('toast-container');
+    const colors = {
+      success: 'border-green-500 text-green-300 bg-[#052e16]',
+      error:   'border-red-500   text-red-300   bg-[#2d0707]',
+      info:    'border-gold      text-gold       bg-[#1a1700]',
+    };
+    const icons = { success: '✓', error: '✕', info: '◆' };
+    const el = document.createElement('div');
+    el.id = 'toast';
+    el.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg border text-sm font-mono ${colors[type] || colors.info}`;
+    el.style.minWidth = '240px';
+    el.innerHTML = `<span class="text-base">${icons[type]||'◆'}</span><span>${escHtml(msg)}</span>`;
+    container.appendChild(el);
+    setTimeout(() => {
+      el.classList.add('hide');
+      setTimeout(() => el.remove(), 350);
+    }, 3200);
+  }
+
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── EVENT LISTENERS ───────────────────────────────────────────
+  document.getElementById('open-modal-btn').onclick = openTradeModal;
+  document.getElementById('close-modal-x').onclick = closeTradeModal;
+  document.getElementById('close-modal-btn').onclick = closeTradeModal;
+  document.getElementById('submit-trade-btn').onclick = submitTrade;
+  document.getElementById('search-input').oninput = filterTrades;
+  document.getElementById('filter-outcome').onchange = filterTrades;
+  document.getElementById('filter-direction').onchange = filterTrades;
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.onclick = () => window.switchTab(btn.dataset.tab, btn);
+  });
+
+  // Start init
+  init();
 </script>
 </body>
 </html>
