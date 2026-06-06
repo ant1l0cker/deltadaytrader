@@ -253,7 +253,7 @@
     <div class="w-px h-6 bg-carbon-500 flex-shrink-0 hidden md:block"></div>
     <div class="flex-col items-center flex-shrink-0 hidden md:flex">
       <span class="text-xs text-smoke font-mono">TRADERS</span>
-      <span id="hdr-traders" class="font-mono text-sm font-semibold text-gold">10</span>
+      <span id="hdr-traders" class="font-mono text-sm font-semibold text-gold">11</span>
     </div>
     <div class="w-px h-6 bg-carbon-500 flex-shrink-0 hidden lg:block"></div>
     <div class="flex-col items-center flex-shrink-0 hidden lg:flex">
@@ -263,7 +263,7 @@
   </div>
 
   <!-- Log Trade CTA -->
-  <button class="btn-gold flex-shrink-0 flex items-center gap-2" id="open-modal-btn">
+  <button class="btn-gold flex-shrink-0 flex items-center gap-2" onclick="openTradeModal()">
     <svg width="14" height="14" fill="none" viewBox="0 0 14 14">
       <path d="M7 1v12M1 7h12" stroke="#0A0A0B" stroke-width="2" stroke-linecap="round"/>
     </svg>
@@ -299,10 +299,10 @@
 
   <!-- ── TABS ───────────────────────────────────────────── -->
   <div class="flex gap-6 border-b border-carbon-500 mb-6">
-    <button class="tab-btn active pb-3 text-sm font-semibold tracking-wide" data-tab="journal">
+    <button class="tab-btn active pb-3 text-sm font-semibold tracking-wide" data-tab="journal" onclick="switchTab('journal', this)">
       Journal Log
     </button>
-    <button class="tab-btn pb-3 text-sm font-semibold tracking-wide text-smoke" data-tab="roster">
+    <button class="tab-btn pb-3 text-sm font-semibold tracking-wide text-smoke" data-tab="roster" onclick="switchTab('roster', this)">
       Team Roster
     </button>
   </div>
@@ -319,15 +319,15 @@
           <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/>
           <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
-        <input id="search-input" type="text" placeholder="Search by trader or outcome…" class="pl-9" />
+        <input id="search-input" type="text" placeholder="Search by trader or outcome…" class="pl-9" oninput="filterTrades()" />
       </div>
-      <select id="filter-outcome" style="width:auto;min-width:130px;">
+      <select id="filter-outcome" onchange="filterTrades()" style="width:auto;min-width:130px;">
         <option value="">All Outcomes</option>
         <option value="WIN">WIN</option>
         <option value="LOSS">LOSS</option>
         <option value="OPEN">OPEN</option>
       </select>
-      <select id="filter-direction" style="width:auto;min-width:140px;">
+      <select id="filter-direction" onchange="filterTrades()" style="width:auto;min-width:140px;">
         <option value="">All Directions</option>
         <option value="BUY STOP">BUY STOP</option>
         <option value="SELL STOP">SELL STOP</option>
@@ -379,7 +379,7 @@
         <h2 class="font-display text-lg text-gold">Team Roster</h2>
         <p class="text-xs text-smoke mt-1">Edit display names — changes sync to the trade form dropdown instantly.</p>
       </div>
-      <div class="text-xs font-mono text-smoke border border-carbon-500 rounded px-3 py-1">10 / 10 SEATS</div>
+      <div class="text-xs font-mono text-smoke border border-carbon-500 rounded px-3 py-1">11 / 11 SEATS</div>
     </div>
     <div id="roster-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       <!-- Populated by JS -->
@@ -392,8 +392,8 @@
 <!-- ═══════════════════════════════════════════════════════════
      MODAL: LOG TRADE
 ═══════════════════════════════════════════════════════════ -->
-<div id="trade-modal" class="fixed inset-0 z-[200] modal-backdrop hidden items-center justify-center p-4">
-  <div class="slide-up w-full max-w-2xl rounded-xl border border-gold gold-glow overflow-hidden" style="background:#111113;">
+<div id="trade-modal" class="fixed inset-0 z-[200] modal-backdrop hidden items-center justify-center p-4" onclick="handleModalBackdropClick(event)">
+  <div class="slide-up w-full max-w-2xl rounded-xl border border-gold gold-glow overflow-hidden" style="background:#111113;" onclick="event.stopPropagation()">
 
     <!-- Modal header -->
     <div class="flex items-center justify-between px-6 py-4 border-b border-carbon-500">
@@ -401,7 +401,7 @@
         <div class="w-2 h-2 rounded-full bg-gold pulse-dot"></div>
         <h3 class="font-display text-base font-bold text-gold tracking-wide">LOG NEW TRADE</h3>
       </div>
-      <button id="close-modal-x" class="text-smoke hover:text-white transition-colors text-xl leading-none">&times;</button>
+      <button onclick="closeTradeModal()" class="text-smoke hover:text-white transition-colors text-xl leading-none">&times;</button>
     </div>
 
     <!-- Modal body -->
@@ -476,8 +476,8 @@
 
     <!-- Modal footer -->
     <div class="flex justify-end gap-3 px-6 py-4 border-t border-carbon-500">
-      <button class="btn-ghost" id="close-modal-btn">Cancel</button>
-      <button class="btn-gold" id="submit-trade-btn">Log Trade →</button>
+      <button class="btn-ghost" onclick="closeTradeModal()">Cancel</button>
+      <button class="btn-gold" onclick="submitTrade()">Log Trade →</button>
     </div>
   </div>
 </div>
@@ -516,7 +516,7 @@
   const LS_TRADES = 'delta_trades_v1';
   const LS_ROSTER = 'delta_roster_v1';
 
-  // ── DEFAULT ROSTER (10 traders) ────────────────────────────────
+  // ── DEFAULT ROSTER (11 traders) ────────────────────────────────
   const DEFAULT_ROSTER = [
     { id: 1,  name: 'Paul'    },
     { id: 2,  name: 'Levy'  },
@@ -536,74 +536,21 @@
   let roster   = [];
   let filtered = [];
 
-  // ── INIT ────────────────────────────────────────────────────────
-  async function init() {
-    // Initial UI load
-    roster = loadRosterLocal();
-    renderRoster();
-    renderTraderDropdown();
+  // ── EXPORT FUNCTIONS TO GLOBAL WINDOW (Required for inline HTML onclick) ────
+  window.openTradeModal = () => {
+    const modal = document.getElementById('trade-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
     setDefaultTimestamp();
-
-    showToast('Connecting to trade floor...', 'info');
-
-    // Establish Real-time Listeners
-    setupRealtimeListeners();
-  }
-
-  // ── REAL-TIME LISTENERS ───────────────────────────────────────
-  function setupRealtimeListeners() {
-    // Listen for Trade changes
-    const qTrades = query(collection(db, "trades"), orderBy("timestamp", "desc"));
-    onSnapshot(qTrades, (snapshot) => {
-      trades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      saveTradesLocal();
-      filterTrades();
-      updateGlobalStats();
-    });
-
-    // Listen for Roster changes
-    onSnapshot(collection(db, "roster"), (snapshot) => {
-      if (!snapshot.empty) {
-        roster = snapshot.docs.map(doc => ({ id: parseInt(doc.id), ...doc.data() }));
-        roster.sort((a,b) => a.id - b.id);
-        saveRosterLocal();
-        renderRoster();
-        renderTraderDropdown();
-        filterTrades(); // Refresh table names if needed
-        updateGlobalStats();
-      } else {
-        // First time initialization if DB is empty
-        initializeRosterOnFirestore();
-      }
-    });
-  }
-
-  async function initializeRosterOnFirestore() {
-    for (const member of DEFAULT_ROSTER) {
-      await setDoc(doc(db, "roster", member.id.toString()), { name: member.name });
-    }
-  }
-
-  // ── LOCAL STORAGE HELPERS ───────────────────────────────────────
-  function loadTradesLocal() {
-    try { return JSON.parse(localStorage.getItem(LS_TRADES)) || []; }
-    catch { return []; }
-  }
-  function saveTradesLocal() {
-    localStorage.setItem(LS_TRADES, JSON.stringify(trades));
-  }
-  function loadRosterLocal() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(LS_ROSTER));
-      if (saved && saved.length === DEFAULT_ROSTER.length) return saved;
-    } catch {}
-    return JSON.parse(JSON.stringify(DEFAULT_ROSTER));
-  }
-  function saveRosterLocal() {
-    localStorage.setItem(LS_ROSTER, JSON.stringify(roster));
-  }
-
-  // ── UI HELPERS ──────────────────────────────────────────────────
+  };
+  window.closeTradeModal = () => {
+    const modal = document.getElementById('trade-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  };
+  window.handleModalBackdropClick = (e) => {
+    if (e.target === e.currentTarget) window.closeTradeModal();
+  };
   window.switchTab = (tab, btn) => {
     document.querySelectorAll('.tab-btn').forEach(b => {
       b.classList.remove('active');
@@ -614,26 +561,20 @@
     document.getElementById('tab-journal').classList.toggle('hidden', tab !== 'journal');
     document.getElementById('tab-roster').classList.toggle('hidden',  tab !== 'roster');
   };
+  window.filterTrades = () => {
+    const q   = document.getElementById('search-input').value.toLowerCase().trim();
+    const oc  = document.getElementById('filter-outcome').value;
+    const dir = document.getElementById('filter-direction').value;
 
-  function openTradeModal() {
-    const modal = document.getElementById('trade-modal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    setDefaultTimestamp();
-  }
-  function closeTradeModal() {
-    const modal = document.getElementById('trade-modal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-  }
-  function setDefaultTimestamp() {
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    document.getElementById('form-timestamp').value = now.toISOString().slice(0,16);
-  }
-
-  // ── CORE LOGIC ────────────────────────────────────────────────
-  async function submitTrade() {
+    filtered = trades.filter(t => {
+      const matchQ  = !q  || (t.trader && t.trader.toLowerCase().includes(q)) || (t.outcome && t.outcome.toLowerCase().includes(q));
+      const matchOC = !oc || t.outcome === oc;
+      const matchD  = !dir || t.direction === dir;
+      return matchQ && matchOC && matchD;
+    });
+    renderTrades();
+  };
+  window.submitTrade = async () => {
     const trader    = document.getElementById('form-trader').value.trim();
     const asset     = document.getElementById('form-asset').value.trim() || 'XAUUSD';
     const direction = document.getElementById('form-direction').value;
@@ -664,22 +605,12 @@
 
     try {
       await addDoc(collection(db, "trades"), tradeData);
-      location.reload();
+      location.reload(); // Original user request: Refresh automatically
     } catch (e) {
       console.error("Error adding document: ", e);
       showToast('Failed to sync trade.', 'error');
     }
-  }
-
-  function clearTradeForm() {
-    document.getElementById('form-lot').value   = '';
-    document.getElementById('form-risk').value  = '';
-    document.getElementById('form-pnl').value   = '';
-    document.getElementById('form-notes').value = '';
-    document.getElementById('form-outcome').value = 'OPEN';
-    document.getElementById('form-asset').value   = 'XAUUSD';
-  }
-
+  };
   window.deleteTrade = async (id) => {
     if (!confirm('Delete this trade entry?')) return;
     try {
@@ -689,7 +620,6 @@
       showToast('Failed to delete.', 'error');
     }
   };
-
   window.saveRosterName = async (id) => {
     const input = document.getElementById(`roster-input-${id}`);
     const newName = input.value.trim();
@@ -703,20 +633,50 @@
     }
   };
 
-  // ── RENDERING ──────────────────────────────────────────────────
-  function filterTrades() {
-    const q   = document.getElementById('search-input').value.toLowerCase().trim();
-    const oc  = document.getElementById('filter-outcome').value;
-    const dir = document.getElementById('filter-direction').value;
+  // ── INTERNAL FUNCTIONS ───────────────────────────────────────
+  async function init() {
+    roster = loadRosterLocal();
+    renderRoster();
+    renderTraderDropdown();
+    setDefaultTimestamp();
+    showToast('Connecting to trade floor...', 'info');
+    setupRealtimeListeners();
+  }
 
-    filtered = trades.filter(t => {
-      const matchQ  = !q  || (t.trader && t.trader.toLowerCase().includes(q)) || (t.outcome && t.outcome.toLowerCase().includes(q));
-      const matchOC = !oc || t.outcome === oc;
-      const matchD  = !dir || t.direction === dir;
-      return matchQ && matchOC && matchD;
+  function setupRealtimeListeners() {
+    const qTrades = query(collection(db, "trades"), orderBy("timestamp", "desc"));
+    onSnapshot(qTrades, (snapshot) => {
+      trades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      saveTradesLocal();
+      window.filterTrades();
+      updateGlobalStats();
     });
 
-    renderTrades();
+    onSnapshot(collection(db, "roster"), (snapshot) => {
+      if (!snapshot.empty) {
+        roster = snapshot.docs.map(doc => ({ id: parseInt(doc.id), ...doc.data() }));
+        roster.sort((a,b) => a.id - b.id);
+        saveRosterLocal();
+        renderRoster();
+        renderTraderDropdown();
+        window.filterTrades();
+        updateGlobalStats();
+      } else {
+        initializeRosterOnFirestore();
+      }
+    });
+  }
+
+  async function initializeRosterOnFirestore() {
+    for (const member of DEFAULT_ROSTER) {
+      await setDoc(doc(db, "roster", member.id.toString()), { name: member.name });
+    }
+  }
+
+  function setDefaultTimestamp() {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('form-timestamp').value = now.toISOString().slice(0,16);
   }
 
   function renderTrades() {
@@ -884,20 +844,21 @@
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  // ── EVENT LISTENERS ───────────────────────────────────────────
-  document.getElementById('open-modal-btn').onclick = openTradeModal;
-  document.getElementById('close-modal-x').onclick = closeTradeModal;
-  document.getElementById('close-modal-btn').onclick = closeTradeModal;
-  document.getElementById('submit-trade-btn').onclick = submitTrade;
-  document.getElementById('search-input').oninput = filterTrades;
-  document.getElementById('filter-outcome').onchange = filterTrades;
-  document.getElementById('filter-direction').onchange = filterTrades;
+  function loadRosterLocal() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(LS_ROSTER));
+      if (saved && saved.length === DEFAULT_ROSTER.length) return saved;
+    } catch {}
+    return JSON.parse(JSON.stringify(DEFAULT_ROSTER));
+  }
+  function saveRosterLocal() {
+    localStorage.setItem(LS_ROSTER, JSON.stringify(roster));
+  }
+  function saveTradesLocal() {
+    localStorage.setItem(LS_TRADES, JSON.stringify(trades));
+  }
 
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.onclick = () => window.switchTab(btn.dataset.tab, btn);
-  });
-
-  // Start init
+  // Kick off initialization
   init();
 </script>
 </body>
